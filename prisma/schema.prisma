@@ -31,8 +31,16 @@ model Sale {
   price Decimal @db.Decimal(10, 2)
   nameClient String?
   cpfClient Int?
+  status  StatuSales  @default(ABERTO)
   createAt  DateTime  @default(now())
   updateAt  DateTime  @updatedAt()
 
   @@map("sales")
+}
+
+enum  StatuSales{
+  ABERTO
+  CONFIRMADO
+  ENTREGUE
+  CANCELADO
 }
