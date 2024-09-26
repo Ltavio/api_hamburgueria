@@ -19,15 +19,14 @@ model Product {
   name String @db.VarChar(30)
   description String @db.Text
   price Decimal @db.Decimal(10, 2)
-  sales Sale[]
+  sales ProductOnSales[]
 
   @@map("products")
 }
 
 model Sale {
   id  Int  @id @default(autoincrement())
-  product Product @relation(fields: [productId], references: [id])
-  productId String
+  product ProductOnSales[]
   price Decimal @db.Decimal(10, 2)
   nameClient String?
   cpfClient Int?
@@ -36,6 +35,16 @@ model Sale {
   updateAt  DateTime  @updatedAt()
 
   @@map("sales")
+}
+
+model ProductOnSales {
+  product Product @relation(fields: [productId], references: [id])
+  productId String
+  sale Sale @relation(fields: [saleId], references: [id])
+  saleId Int
+  createAt  DateTime  @default(now())
+
+  @@id([productId, saleId])
 }
 
 enum  StatuSales{
