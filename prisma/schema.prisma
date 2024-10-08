@@ -42,6 +42,7 @@ model ProductOnSales {
   productId String
   sale Sale @relation(fields: [saleId], references: [id])
   saleId Int
+  quantity Int  @default(1)
   createAt  DateTime  @default(now())
 
   @@id([productId, saleId])

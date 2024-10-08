@@ -17,12 +17,7 @@ router.get("/", async (req, res) => {
     try{
         const products = await prisma.product.findMany({
             orderBy: { name: 'asc'},
-            select: {
-                code: true,
-                name: true,
-                description: true,
-                price: true
-            }
+            include: { sales: true }
         })
 
         res.status(200).json(products)
@@ -36,13 +31,7 @@ router.get("/:code", async (req, res) => {
     try{
         const product = await prisma.product.findUnique({
             where: { code: Number(code) },
-            select: {
-                id: true,
-                code: true,
-                name: true,
-                description: true,
-                price: true
-            }
+            include: { sales: true }
         })
         res.status(200).json(product)
     } catch (error) {
