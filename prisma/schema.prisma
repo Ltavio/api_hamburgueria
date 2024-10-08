@@ -12,3 +12,45 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Product {
+  id  String  @id @default(uuid())
+  code  Int?  @db.Int() @unique()
+  name String @db.VarChar(30)
+  description String @db.Text
+  price Decimal @db.Decimal(10, 2)
+  sales ProductOnSales[]
+
+  @@map("products")
+}
+
+model Sale {
+  id  Int  @id @default(autoincrement())
+  product ProductOnSales[]
+  price Decimal @db.Decimal(10, 2)
+  nameClient String?
+  cpfClient Int?
+  status  StatuSales  @default(ABERTO)
+  createAt  DateTime  @default(now())
+  updateAt  DateTime  @updatedAt()
+
+  @@map("sales")
+}
+
+model ProductOnSales {
+  product Product @relation(fields: [productId], references: [id])
+  productId String
+  sale Sale @relation(fields: [saleId], references: [id])
+  saleId Int
+  quantity Int  @default(1)
+  createAt  DateTime  @default(now())
+
+  @@id([productId, saleId])
+}
+
+enum  StatuSales{
+  ABERTO
+  CONFIRMADO
+  ENTREGUE
+  CANCELADO
+}
