@@ -1,3 +1,4 @@
+import { handleErrorMiddleware } from './middlewares/handleError.middleware';
 import express from 'express'
 const app = express()
 const port = 3003
@@ -5,6 +6,7 @@ const port = 3003
 import routeProduct from './controllers/products'
 import routerSales from './controllers/sales'
 
+app.use(handleErrorMiddleware)
 app.use(express.json())
 app.use('/products', routeProduct)
 app.use('/sales', routerSales)

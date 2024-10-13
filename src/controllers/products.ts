@@ -4,7 +4,8 @@ const prisma = new PrismaClient()
 import { Router } from "express";
 const router = Router();
 
-import { Schema, z } from "zod"
+import { validationIsActivateProduct } from "../middlewares/ensureIsActivate.middleware";
+import { z } from "zod"
 
 const productSchema = z.object({
     code: z.number().optional(),
@@ -69,6 +70,8 @@ router.patch("/:id", async (req, res) => {
     const { id } = req.params
 
     try {
+        await validationIsActivateProduct(id)
+
         const valid = productSchema.partial()
         const validPartial = valid.safeParse(req.body)
 
@@ -93,6 +96,8 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params
 
     try {
+        await validationIsActivateProduct(id)
+
         const product = await prisma.product.update({
             where: { id: id },
             data: {

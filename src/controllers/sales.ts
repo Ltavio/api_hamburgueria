@@ -6,6 +6,7 @@ const router = Router()
 
 import { Schema, z } from "zod";
 import { priceCalculated } from "../../utils/sales";
+import { validationIsActivateSales } from "../middlewares/ensureIsActivate.middleware";
 
 const saleSchema = z.object({
     product: z.object({id: z.string(), quantity: z.number()}).array(),
@@ -35,14 +36,15 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     const { id } = req.params
     try {
-        const sale = await prisma.sale.findUnique({
-            where: {
-                id: Number(id)
-            },
-            include: {
-                product: true
-            }
-        })
+
+      const sale = await prisma.sale.findUnique({
+          where: {
+              id: Number(id)
+          },
+          include: {
+              product: true
+          }
+      })
 
         res.status(200).json(sale)
     } catch (error) {
@@ -95,6 +97,8 @@ router.patch("/:id", async (req, res) => {
   let showPrice
 
   try {
+    await validationIsActivateSales(Number(id))
+
     const valid = saleSchema.partial()
     const validPartial = valid.safeParse(req.body)
 
@@ -140,11 +144,14 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const { id } = req.params
   try {
+    await validationIsActivateSales(Number(id))
+
     const sale = await prisma.sale.update({
       where: { id: Number(id) },
       data: {
         isDeleted: true,
-        deletedAt: new Date()
+        deletedAt: new Date(),
+        status: "CANCELADO"
       }
     })
     res.status(204).json(sale)
