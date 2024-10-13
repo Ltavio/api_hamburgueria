@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
     try{
         const products = await prisma.product.findMany({
             orderBy: { name: 'asc'},
+            where: { isDeleted: false},
             include: { sales: true }
         })
 
@@ -92,8 +93,12 @@ router.delete("/:id", async (req, res) => {
     const { id } = req.params
 
     try {
-        const product = await prisma.product.delete({
-            where: { id: id }
+        const product = await prisma.product.update({
+            where: { id: id },
+            data: {
+                isDeleted:  true,
+                deletedAt: new Date()
+            }
         })
 
         res.status(204).json(product)

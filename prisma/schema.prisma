@@ -14,38 +14,42 @@ datasource db {
 }
 
 model Product {
-  id  String  @id @default(uuid())
-  code  Int?  @db.Int() @unique()
-  name String @db.VarChar(30)
-  description String @db.Text
-  price Decimal @db.Decimal(10, 2)
-  sales ProductOnSales[]
-  deleted Boolean @default(false)
+  id            String            @id @default(uuid())
+  code          Int?              @db.Int() @unique()
+  name          String            @db.VarChar(30)
+  description   String            @db.Text
+  price         Decimal           @db.Decimal(10, 2)
+  sales         ProductOnSales[]
+  isDeleted     Boolean           @default(false)
+  deletedAt     DateTime?
+  createAt      DateTime          @default(now())
+  updateAt      DateTime?
 
   @@map("products")
 }
 
 model Sale {
-  id  Int  @id @default(autoincrement())
-  product ProductOnSales[]
-  price Decimal @db.Decimal(10, 2)
-  nameClient String?
-  cpfClient Int?
-  status  StatuSales  @default(ABERTO)
-  createAt  DateTime  @default(now())
-  updateAt  DateTime  @updatedAt()
-  deleted Boolean @default(false)
+  id            Int               @id @default(autoincrement())
+  product       ProductOnSales[]
+  price         Decimal           @db.Decimal(10, 2)
+  nameClient    String?
+  cpfClient     Int?
+  status        StatuSales        @default(ABERTO)
+  createAt      DateTime          @default(now())
+  updateAt      DateTime          @updatedAt()
+  isDeleted     Boolean           @default(false)
+  deletedAt     DateTime?
 
   @@map("sales")
 }
 
 model ProductOnSales {
-  product Product @relation(fields: [productId], references: [id])
-  productId String
-  sale Sale @relation(fields: [saleId], references: [id])
-  saleId Int
-  quantity Int  @default(1)
-  createAt  DateTime  @default(now())
+  product       Product           @relation(fields: [productId], references: [id])
+  productId     String
+  sale          Sale              @relation(fields: [saleId], references: [id])
+  saleId        Int
+  quantity      Int               @default(1)
+  createAt      DateTime          @default(now())
 
   @@id([productId, saleId])
 }

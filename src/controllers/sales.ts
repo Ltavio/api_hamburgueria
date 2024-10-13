@@ -11,12 +11,16 @@ const saleSchema = z.object({
     product: z.object({id: z.string(), quantity: z.number()}).array(),
     nameClient: z.string().optional(),
     cpfClient: z.number().optional(),
-    status: z.nativeEnum(StatuSales).optional()
+    status: z.nativeEnum(StatuSales).optional(),
+    isDelete: z.boolean()
 })
 
 router.get("/", async (req, res) => {
     try {
         const sales = await prisma.sale.findMany({
+          where: {
+            isDeleted: false
+          },
           include: {
             product: true,
           }
@@ -128,6 +132,22 @@ router.patch("/:id", async (req, res) => {
     })
 
     res.status(201).json(saleUpdate)
+  } catch (error) {
+    res.status(400).json(error)
+  }
+})
+
+router.delete("/:id", async (req, res) => {
+  const { id } = req.params
+  try {
+    const sale = await prisma.sale.update({
+      where: { id: Number(id) },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date()
+      }
+    })
+    res.status(204).json(sale)
   } catch (error) {
     res.status(400).json(error)
   }
