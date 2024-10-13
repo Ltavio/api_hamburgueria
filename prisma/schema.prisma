@@ -20,6 +20,7 @@ model Product {
   description String @db.Text
   price Decimal @db.Decimal(10, 2)
   sales ProductOnSales[]
+  deleted Boolean @default(false)
 
   @@map("products")
 }
@@ -33,6 +34,7 @@ model Sale {
   status  StatuSales  @default(ABERTO)
   createAt  DateTime  @default(now())
   updateAt  DateTime  @updatedAt()
+  deleted Boolean @default(false)
 
   @@map("sales")
 }
