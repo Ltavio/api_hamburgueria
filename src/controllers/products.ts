@@ -87,4 +87,19 @@ router.patch("/:id", async (req, res) => {
         res.status(400).json(error)
     }
 })
+
+router.delete("/:id", async (req, res) => {
+    const { id } = req.params
+
+    try {
+        const product = await prisma.product.delete({
+            where: { id: id }
+        })
+
+        res.status(204).json(product)
+    } catch(error) {
+        res.status(400).json(error)
+    }
+})
+
 export default router

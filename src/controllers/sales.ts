@@ -5,6 +5,7 @@ import { Router } from "express";
 const router = Router()
 
 import { Schema, z } from "zod";
+import { priceCalculated } from "../../utils/sales";
 
 const saleSchema = z.object({
     product: z.object({id: z.string(), quantity: z.number()}).array(),
@@ -53,20 +54,7 @@ router.post("/", async (req, res) => {
           return res.status(400).json(valid.error);
         }
 
-        let sumPrice = 0
-
-        for(let i = 0; i < valid.data.product.length; i++) {
-          const {id, quantity} = valid.data.product[i]
-          const product = await prisma.product.findUnique({
-            where: {
-              id: id
-            }
-          })
-          if(product?.price) {
-            sumPrice += Number(product.price) * quantity
-          }
-        }
-        console.log(sumPrice)
+        let showPrice = await priceCalculated(valid.data.product) 
 
         const sale = await prisma.sale.create({
           data: {
@@ -81,7 +69,7 @@ router.post("/", async (req, res) => {
                 quantity: c.quantity
               }))
             },
-            price: sumPrice
+            price: showPrice
           },
           include: {
             product: {
@@ -100,7 +88,7 @@ router.post("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   const { id } = req.params
-  let priceCalculated = 0
+  let showPrice
 
   try {
     const valid = saleSchema.partial()
@@ -117,15 +105,7 @@ router.patch("/:id", async (req, res) => {
         where: { saleId: Number(id) }
       })
       
-
-      for (let i = 0; i < validPartial.data.product.length; i++) {
-        const {id, quantity} = validPartial.data.product[i]
-        const product = await prisma.product.findUnique({where: {id: id}})
-
-        if(product) {
-          priceCalculated += Number(product.price) * quantity
-        }
-      }
+      showPrice = await priceCalculated(validPartial.data.product)
     }
 
     const saleUpdate = await prisma.sale.update({
@@ -140,7 +120,7 @@ router.patch("/:id", async (req, res) => {
             }
           })
         },
-        price: priceCalculated
+        price: showPrice
       },
       include: {
         product: true
