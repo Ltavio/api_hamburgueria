@@ -1,16 +1,16 @@
 import { validationIsActivateSales } from "../middlewares/ensureIsActivate.middleware";
 import { PrismaClient } from "@prisma/client";
-import { priceCalculated } from "../utils/sales";
 import { Request, Response } from "express";
 import { saleSchema } from "../validators";
 const prisma = new PrismaClient();
 
-import { Router } from "express";
-import { listSalesService } from "../services/sales/listSales.service";
 import { createdSalesService } from "../services/sales/createdSales.service";
 import { updatedSalesService } from "../services/sales/updatedSales.service";
 import { deleteSalesService } from "../services/sales/deleteSales.service";
 import { listOneSaleService } from "../services/sales/listOneSale.service";
+import { listSalesService } from "../services/sales/listSales.service";
+
+import { Router } from "express";
 const router = Router()
 
 router.get("/", async (req: Request, res: Response) => {

@@ -5,17 +5,18 @@ import { Request, Response } from "express";
 const prisma = new PrismaClient()
 
 import { Router } from "express";
+import { createdProductsService } from "../services/products/createdProducts.service";
+import { updatedProductService } from "../services/products/updatedProducts.service";
+import { deleteProductService } from "../services/products/deleteProduct.service";
+import { listOneProductService } from "../services/products/listOneProduct.service";
+import { listProductsService } from "../services/products/listProducts.service";
 const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
     try{
-        const products = await prisma.product.findMany({
-            orderBy: { name: 'asc'},
-            where: { isDeleted: false},
-            include: { sales: true }
-        })
+        const response = await listProductsService()
 
-        res.status(200).json(products)
+        res.status(200).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
@@ -24,11 +25,9 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/:code", async (req: Request, res: Response) => {
     const { code } = req.params;
     try{
-        const product = await prisma.product.findUnique({
-            where: { code: Number(code) },
-            include: { sales: true }
-        })
-        res.status(200).json(product)
+        const response = await listOneProductService(code)
+
+        res.status(200).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
@@ -44,16 +43,9 @@ router.post("/", async (req: Request, res: Response) => {
             return;
         }
         
-        const codeMax = await prisma.product.findMany({ orderBy: { code: 'desc'}})
+        const response = await createdProductsService(valid.data)
 
-        const product = await prisma.product.create({
-            data: {
-                ...valid.data,
-                code: valid.data.code ? valid.data.code : Number(codeMax[0]?.code) + 1
-            }
-        })
-
-        res.status(201).json(product)
+        res.status(201).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
@@ -63,8 +55,6 @@ router.patch("/:id", async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
-        await validationIsActivateProduct(id)
-
         const valid = productSchema.partial()
         const validPartial = valid.safeParse(req.body)
 
@@ -74,12 +64,9 @@ router.patch("/:id", async (req: Request, res: Response) => {
             return ;
         }
 
-        const product = await prisma.product.update({
-            where: { id: id},
-            data: validPartial.data
-        })
+        const response = await updatedProductService(validPartial.data, id)
 
-        res.status(201).json(product)
+        res.status(201).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
@@ -89,17 +76,9 @@ router.delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
-        await validationIsActivateProduct(id)
+        const response = await deleteProductService(id)
 
-        const product = await prisma.product.update({
-            where: { id: id },
-            data: {
-                isDeleted:  true,
-                deletedAt: new Date()
-            }
-        })
-
-        res.status(204).json(product)
+        res.status(204).json(response)
     } catch(error) {
         res.status(400).json(error)
     }
