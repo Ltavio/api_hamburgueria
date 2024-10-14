@@ -1,45 +1,39 @@
+import { validationIsActivateProduct } from "../middlewares/ensureIsActivate.middleware";
 import { PrismaClient } from "@prisma/client";
+import { productSchema } from "../validators";
+import { Request, Response } from "express";
 const prisma = new PrismaClient()
 
 import { Router } from "express";
+import { createdProductsService } from "../services/products/createdProducts.service";
+import { updatedProductService } from "../services/products/updatedProducts.service";
+import { deleteProductService } from "../services/products/deleteProduct.service";
+import { listOneProductService } from "../services/products/listOneProduct.service";
+import { listProductsService } from "../services/products/listProducts.service";
 const router = Router();
 
-import { Schema, z } from "zod"
-
-const productSchema = z.object({
-    code: z.number().optional(),
-    name: z.string(),
-    description: z.string(),
-    price: z.number()
-})
-
-router.get("/", async (req, res) => {
+export const listProductsController = async (req: Request, res: Response) => {
     try{
-        const products = await prisma.product.findMany({
-            orderBy: { name: 'asc'},
-            include: { sales: true }
-        })
+        const response = await listProductsService()
 
-        res.status(200).json(products)
+        res.status(200).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.get("/:code", async (req, res) => {
+export const listOneProductController = async (req: Request, res: Response) => {
     const { code } = req.params;
     try{
-        const product = await prisma.product.findUnique({
-            where: { code: Number(code) },
-            include: { sales: true }
-        })
-        res.status(200).json(product)
+        const response = await listOneProductService(code)
+
+        res.status(200).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.post("/", async (req, res) => {
+export const createProductsController = async (req: Request, res: Response) => {
     try {
         const valid = productSchema.safeParse(req.body)
 
@@ -49,22 +43,15 @@ router.post("/", async (req, res) => {
             return;
         }
         
-        const codeMax = await prisma.product.findMany({ orderBy: { code: 'desc'}})
+        const response = await createdProductsService(valid.data)
 
-        const product = await prisma.product.create({
-            data: {
-                ...valid.data,
-                code: valid.data.code ? valid.data.code : Number(codeMax[0]?.code) + 1
-            }
-        })
-
-        res.status(201).json(product)
+        res.status(201).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.patch("/:id", async (req, res) => {
+export const updateProductController = async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
@@ -77,14 +64,24 @@ router.patch("/:id", async (req, res) => {
             return ;
         }
 
-        const product = await prisma.product.update({
-            where: { id: id},
-            data: validPartial.data
-        })
+        const response = await updatedProductService(validPartial.data, id)
 
-        res.status(201).json(product)
+        res.status(201).json(response)
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
+
+export const deleteProductController = async (req: Request, res: Response) => {
+    const { id } = req.params
+
+    try {
+        const response = await deleteProductService(id)
+
+        res.status(204).json(response)
+    } catch(error) {
+        res.status(400).json(error)
+    }
+}
+
 export default router

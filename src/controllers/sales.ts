@@ -1,97 +1,89 @@
-import { StatuSales, PrismaClient } from "@prisma/client";
+import { validationIsActivateSales } from "../middlewares/ensureIsActivate.middleware";
+import { PrismaClient } from "@prisma/client";
+import { Request, Response } from "express";
+import { saleSchema } from "../validators";
 const prisma = new PrismaClient();
+
+import { createdSalesService } from "../services/sales/createdSales.service";
+import { updatedSalesService } from "../services/sales/updatedSales.service";
+import { deleteSalesService } from "../services/sales/deleteSales.service";
+import { listOneSaleService } from "../services/sales/listOneSale.service";
+import { listSalesService } from "../services/sales/listSales.service";
 
 import { Router } from "express";
 const router = Router()
 
-import { Schema, z } from "zod";
+export const listSalesController = async (req: Request, res: Response) => {
+  try {
+    const response = await listSalesService()
 
-const saleSchema = z.object({
-    product: z.object({id: z.string(), quantity: z.number()}).array(),
-    nameClient: z.string().optional(),
-    cpfClient: z.number().optional(),
-    status: z.nativeEnum(StatuSales).optional()
-})
+    res.status(200).json(response)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
 
-router.get("/", async (req, res) => {
-    try {
-        const sales = await prisma.sale.findMany()
+export const listOneSaleController = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
 
-        res.status(200).json(sales)
-    } catch (error) {
-        res.status(500).json(error)
+    const response = await listOneSaleService(Number(id))
+
+    res.status(200).json(response)
+  } catch (error) {
+    res.status(400).json(error)
+  }
+}
+
+export const createdSalesController = async (req: Request, res: Response) => {
+  try {
+    const valid = saleSchema.safeParse(req.body);
+
+    if (!valid.success) {
+      return res.status(400).json(valid.error);
     }
-})
 
-router.get("/:id", async (req, res) => {
-    const { id } = req.params
-    try {
-        const sale = await prisma.sale.findUnique({
-            where: {
-                id: Number(id)
-            },
-            include: {
-                product: true
-            }
-        })
+    const response = await createdSalesService(valid.data)
 
-        res.status(200).json(sale)
-    } catch (error) {
-        res.status(400).json(error)
+    return res.status(200).json(response)
+  } catch (error) {
+    return res.status(400).json({ error: error})
+  }
+}
+
+export const updateSalesController = async (req: Request, res: Response) => {
+  const { id } = req.params
+
+  try {
+    await validationIsActivateSales(Number(id))
+
+    const valid = saleSchema.partial()
+    const validPartial = valid.safeParse(req.body)
+
+    if(!validPartial.success) {
+      res.status(400).json({error: validPartial.error})
+
+      return ;
     }
-})
 
-router.post("/", async (req, res) => {
-    try {
-        const valid = saleSchema.safeParse(req.body);
-    
-        if (!valid.success) {
-          return res.status(400).json(valid.error);
-        }
+    const response = await updatedSalesService( validPartial.data, Number(id) )
 
-        let sumPrice = 0
+    res.status(201).json(response)
+  } catch (error) {
+    res.status(400).json(error)
+  }
+}
 
-        for(let i = 0; i < valid.data.product.length; i++) {
-          const {id, quantity} = valid.data.product[i]
-          const product = await prisma.product.findUnique({
-            where: {
-              id: id
-            }
-          })
-          if(product?.price) {
-            sumPrice += Number(product.price) * quantity
-          }
-        }
-        console.log(sumPrice)
+export const deleteSaleController = async (req: Request, res: Response) => {
+  const { id } = req.params
 
-        const sale = await prisma.sale.create({
-          data: {
-            ...valid.data,
-            product: {
-              create: valid.data.product.map((c) => ({
-                product: {
-                  connect: {
-                    id: c.id
-                  }
-                },
-                quantity: c.quantity
-              }))
-            },
-            price: sumPrice
-          },
-          include: {
-            product: {
-              include: {
-                product: true
-              }
-            },
-          },
-        });
-    
-        return res.status(200).json(sale)
-      } catch (error) {
-        return res.status(400).json({ error: error});
-      }
-})
+  try {
+    const response = await deleteSalesService(Number(id))
+
+    res.status(204).json(response)
+  } catch (error) {
+    res.status(400).json(error)
+  }
+}
 
 export default router
