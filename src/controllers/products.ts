@@ -1,20 +1,13 @@
+import { validationIsActivateProduct } from "../middlewares/ensureIsActivate.middleware";
 import { PrismaClient } from "@prisma/client";
+import { productSchema } from "../validators";
+import { Request, Response } from "express";
 const prisma = new PrismaClient()
 
 import { Router } from "express";
 const router = Router();
 
-import { validationIsActivateProduct } from "../middlewares/ensureIsActivate.middleware";
-import { z } from "zod"
-
-const productSchema = z.object({
-    code: z.number().optional(),
-    name: z.string(),
-    description: z.string(),
-    price: z.number()
-})
-
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
     try{
         const products = await prisma.product.findMany({
             orderBy: { name: 'asc'},
@@ -28,7 +21,7 @@ router.get("/", async (req, res) => {
     }
 })
 
-router.get("/:code", async (req, res) => {
+router.get("/:code", async (req: Request, res: Response) => {
     const { code } = req.params;
     try{
         const product = await prisma.product.findUnique({
@@ -41,7 +34,7 @@ router.get("/:code", async (req, res) => {
     }
 })
 
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
     try {
         const valid = productSchema.safeParse(req.body)
 
@@ -66,7 +59,7 @@ router.post("/", async (req, res) => {
     }
 })
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
@@ -92,7 +85,7 @@ router.patch("/:id", async (req, res) => {
     }
 })
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {

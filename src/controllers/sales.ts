@@ -1,22 +1,14 @@
+import { validationIsActivateSales } from "../middlewares/ensureIsActivate.middleware";
 import { StatuSales, PrismaClient } from "@prisma/client";
+import { priceCalculated } from "../../utils/sales";
+import { Request, Response } from "express";
+import { saleSchema } from "../validators";
 const prisma = new PrismaClient();
 
 import { Router } from "express";
 const router = Router()
 
-import { Schema, z } from "zod";
-import { priceCalculated } from "../../utils/sales";
-import { validationIsActivateSales } from "../middlewares/ensureIsActivate.middleware";
-
-const saleSchema = z.object({
-    product: z.object({id: z.string(), quantity: z.number()}).array(),
-    nameClient: z.string().optional(),
-    cpfClient: z.number().optional(),
-    status: z.nativeEnum(StatuSales).optional(),
-    isDelete: z.boolean()
-})
-
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
     try {
         const sales = await prisma.sale.findMany({
           where: {
@@ -33,7 +25,7 @@ router.get("/", async (req, res) => {
     }
 })
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req: Request, res: Response) => {
     const { id } = req.params
     try {
 
@@ -52,7 +44,7 @@ router.get("/:id", async (req, res) => {
     }
 })
 
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
     try {
         const valid = saleSchema.safeParse(req.body);
     
@@ -92,7 +84,7 @@ router.post("/", async (req, res) => {
       }
 })
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", async (req: Request, res: Response) => {
   const { id } = req.params
   let showPrice
 
@@ -141,7 +133,7 @@ router.patch("/:id", async (req, res) => {
   }
 })
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params
   try {
     await validationIsActivateSales(Number(id))
