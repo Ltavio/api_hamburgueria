@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { productSale_Template } from "../src/models/products";
+import { IProductSale } from "../interfaces/products";
 const prisma = new PrismaClient();
 
-export const priceCalculated = async (products: productSale_Template[]) => {
+export const priceCalculated = async (products: IProductSale[]) => {
     let sumPrices = 0
 
     for (let i = 0; i < products.length; i++) {

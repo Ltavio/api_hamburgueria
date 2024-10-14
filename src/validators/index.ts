@@ -21,7 +21,7 @@ export const saleSchema = z.object({
     nameClient: z.string().optional(),
     cpfClient: z.number().optional(),
     status: z.nativeEnum(StatuSales).optional(),
-    isDelete: z.boolean()
+    isDelete: z.boolean().optional()
 })
 
 
