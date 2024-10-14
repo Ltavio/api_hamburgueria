@@ -13,45 +13,45 @@ import { listSalesService } from "../services/sales/listSales.service";
 import { Router } from "express";
 const router = Router()
 
-router.get("/", async (req: Request, res: Response) => {
-    try {
-        const response = await listSalesService()
+export const listSalesController = async (req: Request, res: Response) => {
+  try {
+    const response = await listSalesService()
 
-        res.status(200).json(response)
-    } catch (error) {
-        res.status(500).json(error)
+    res.status(200).json(response)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
+
+export const listOneSaleController = async (req: Request, res: Response) => {
+  const { id } = req.params
+  try {
+
+    const response = await listOneSaleService(Number(id))
+
+    res.status(200).json(response)
+  } catch (error) {
+    res.status(400).json(error)
+  }
+}
+
+export const createdSalesController = async (req: Request, res: Response) => {
+  try {
+    const valid = saleSchema.safeParse(req.body);
+
+    if (!valid.success) {
+      return res.status(400).json(valid.error);
     }
-})
 
-router.get("/:id", async (req: Request, res: Response) => {
-    const { id } = req.params
-    try {
+    const response = await createdSalesService(valid.data)
 
-      const response = await listOneSaleService(Number(id))
+    return res.status(200).json(response)
+  } catch (error) {
+    return res.status(400).json({ error: error})
+  }
+}
 
-        res.status(200).json(response)
-    } catch (error) {
-        res.status(400).json(error)
-    }
-})
-
-router.post("/", async (req: Request, res: Response) => {
-    try {
-        const valid = saleSchema.safeParse(req.body);
-    
-        if (!valid.success) {
-          return res.status(400).json(valid.error);
-        }
-
-        const response = await createdSalesService(valid.data)
-
-        return res.status(200).json(response)
-      } catch (error) {
-        return res.status(400).json({ error: error})
-      }
-})
-
-router.patch("/:id", async (req: Request, res: Response) => {
+export const updateSalesController = async (req: Request, res: Response) => {
   const { id } = req.params
 
   try {
@@ -72,9 +72,9 @@ router.patch("/:id", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(400).json(error)
   }
-})
+}
 
-router.delete("/:id", async (req: Request, res: Response) => {
+export const deleteSaleController = async (req: Request, res: Response) => {
   const { id } = req.params
 
   try {
@@ -84,6 +84,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
   } catch (error) {
     res.status(400).json(error)
   }
-})
+}
 
 export default router

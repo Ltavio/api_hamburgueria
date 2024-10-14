@@ -12,7 +12,7 @@ import { listOneProductService } from "../services/products/listOneProduct.servi
 import { listProductsService } from "../services/products/listProducts.service";
 const router = Router();
 
-router.get("/", async (req: Request, res: Response) => {
+export const listProductsController = async (req: Request, res: Response) => {
     try{
         const response = await listProductsService()
 
@@ -20,9 +20,9 @@ router.get("/", async (req: Request, res: Response) => {
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.get("/:code", async (req: Request, res: Response) => {
+export const listOneProductController = async (req: Request, res: Response) => {
     const { code } = req.params;
     try{
         const response = await listOneProductService(code)
@@ -31,9 +31,9 @@ router.get("/:code", async (req: Request, res: Response) => {
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.post("/", async (req: Request, res: Response) => {
+export const createProductsController = async (req: Request, res: Response) => {
     try {
         const valid = productSchema.safeParse(req.body)
 
@@ -49,9 +49,9 @@ router.post("/", async (req: Request, res: Response) => {
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.patch("/:id", async (req: Request, res: Response) => {
+export const updateProductController = async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
@@ -70,9 +70,9 @@ router.patch("/:id", async (req: Request, res: Response) => {
     } catch (error) {
         res.status(400).json(error)
     }
-})
+}
 
-router.delete("/:id", async (req: Request, res: Response) => {
+export const deleteProductController = async (req: Request, res: Response) => {
     const { id } = req.params
 
     try {
@@ -82,6 +82,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
     } catch(error) {
         res.status(400).json(error)
     }
-})
+}
 
 export default router
